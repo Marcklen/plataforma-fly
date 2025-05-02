@@ -4,10 +4,31 @@ server:
 spring:
   application:
     name: config-server
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
   cloud:
     config:
       server:
         git:
           uri: https://github.com/Marcklen/plataforma-fly-configs
-          default-label: master
+          default-label: main
           search-paths: .
+          clone-on-start: true
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Marcklen/plataforma-fly-configs
+          default-label: main
+          search-paths: .
+          username: ${GITHUB_USERNAME}
+          password: ${GITHUB_TOKEN}
+          clone-on-start: true
