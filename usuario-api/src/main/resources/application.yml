@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: usuario-api
+  profiles:
+    active: dev
+  config:
+    import: optional:configserver:http://localhost:8088
+server:
+  port: 8081
