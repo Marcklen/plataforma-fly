@@ -1,27 +1,9 @@
-server:
-  port: 8080
-
 spring:
   application:
     name: gateway-api
+
   profiles:
     active: dev
+
   config:
     import: optional:configserver:http://localhost:8088
-
-  cloud:
-    gateway:
-      mvc:
-        routes:
-          - id: usuario-api
-            uri: http://localhost:8081
-            predicates:
-              - Path=/api/usuario/**
-            filters:
-              - StripPrefix=1
-          - id: auth-api
-            uri: http://localhost:8082
-            predicates:
-              - Path=/api/auth/**
-            filters:
-              - StripPrefix=1

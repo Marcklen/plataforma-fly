@@ -1,5 +1,7 @@
 package br.com.plataformafly.usuarioapi.service.impl;
 
+import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioExistenteException;
+import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioNaoEncontradoException;
 import br.com.plataformafly.usuarioapi.model.Usuario;
 import br.com.plataformafly.usuarioapi.model.dto.in.UsuarioDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioCreateDTO;
@@ -23,7 +25,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioDTO criar(UsuarioCreateDTO dto) {
         if (usuarioRepository.findByLogin(dto.getLogin()).isPresent()) {
-            throw new RuntimeException("Login já existente.");
+            throw new UsuarioExistenteException("Login já existente.");
         }
 
         Usuario usuario = mapper.convertValue(dto, Usuario.class);
@@ -77,7 +79,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepository
                 .findById(id)
                 .orElseThrow(
-                        () -> new RuntimeException("Usuario não encontrado")
+                        () -> new UsuarioNaoEncontradoException("Usuario não encontrado!!!")
                 );
     }
 }

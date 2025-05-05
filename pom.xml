@@ -14,6 +14,8 @@
     <modules>
         <module>config-server</module>
         <module>gateway-api</module>
+        <module>auth-api</module>
+        <module>usuario-api</module>
     </modules>
 
     <!-- Propriedades globais -->
