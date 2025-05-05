@@ -8,4 +8,5 @@ public class UsuarioUpdateDTO {
     private String nome;
     private String email;
     private Boolean admin;
+    private String password;
 }
