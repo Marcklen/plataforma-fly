@@ -10,8 +10,8 @@ Este repositório representa o **projeto principal** que centraliza os microserv
     plataforma-fly/
 ├── config-server/       # Servidor de configuração centralizado (Spring Cloud Config)
 ├── gateway-api/         # API Gateway para roteamento e segurança das requisições
-├── usuario-api/         # (a implementar) CRUD de usuários
-├── auth-api/            # (a implementar) Autenticação com JWT e controle de sessões
+├── usuario-api/         # (em implementação) CRUD de usuários
+├── auth-api/            # (em implementação) Autenticação com JWT e controle de sessões
 ├── email-producer-api/  # (a implementar) Envia mensagens para o RabbitMQ
 ├── email-consumer-api/  # (a implementar) Consome mensagens e envia e-mails
 ```
