@@ -10,6 +10,8 @@ import br.com.plataformafly.usuarioapi.model.repository.UsuarioRepository;
 import br.com.plataformafly.usuarioapi.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -51,29 +53,34 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    @CacheEvict(value = "usuarios", allEntries = true)
     public UsuarioDTO atualizar(Integer id, UsuarioUpdateDTO dto) {
         Usuario usuario = buscarUsuariosPorID(id);
+        boolean isOwner = usuario.getLogin().equals(getCurrentUsername());
+        boolean isAdmin = isAdmin();
 
-        // Verifica se pode alterar a senha
+        // Acesso negado se não for admin nem dono
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("Você não tem permissão para atualizar este usuário.");
+        }
+        // Qualquer um com permissão pode alterar a própria senha
         if (dto.getPassword() != null) {
-            if (!isAdmin() && !usuario.getLogin().equals(getCurrentUsername())) {
-                throw new AccessDeniedException("Somente administradores podem alterar senhas de outros usuários.");
-            }
             usuario.setPassword(encoder.encode(dto.getPassword()));
         }
-
-        if (dto.getNome() != null) {
-            usuario.setNome(dto.getNome());
+        // Apenas o próprio usuário pode alterar nome/email
+        if (isOwner) {
+            if (dto.getNome() != null) usuario.setNome(dto.getNome());
+            if (dto.getEmail() != null) usuario.setEmail(dto.getEmail());
         }
-        if (dto.getEmail() != null) {
-            usuario.setLogin(dto.getEmail());
-        }
-        if (dto.getAdmin() != null) {
+        // Apenas admin pode mudar o campo admin
+        if (dto.getAdmin() != null && isAdmin) {
             usuario.setAdmin(dto.getAdmin());
         }
         usuario.setAtualizadoEm(LocalDateTime.now());
-
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        System.out.println("Usuário autenticado: " + getCurrentUsername());
+        System.out.println("É ADMIN? " + isAdmin());
+        System.out.println("Atualizado: " + usuarioAtualizado);
         return mapper.convertValue(usuarioAtualizado, UsuarioDTO.class);
     }
 
@@ -91,6 +98,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    @Cacheable(value = "usuarios", key = "#login")
     public UsuarioDTO buscarPorLogin(String login) {
         var usuario = usuarioRepository
                 .findByLogin(login)
