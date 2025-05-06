@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/usuario")
+@RequestMapping("/usuario")
 @RequiredArgsConstructor
 public class UsuarioController {
 
@@ -45,4 +45,8 @@ public class UsuarioController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/login/{login}")
+    public ResponseEntity<UsuarioDTO> buscarPorLogin(@PathVariable String login) {
+        return ResponseEntity.ok(usuarioService.buscarPorLogin(login));
+    }
 }

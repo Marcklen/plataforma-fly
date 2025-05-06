@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -87,6 +88,24 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void deletar(Integer id) {
         Usuario usuario = buscarUsuariosPorID(id);
         usuarioRepository.delete(usuario);
+    }
+
+    @Override
+    public UsuarioDTO buscarPorLogin(String login) {
+        var usuario = usuarioRepository
+                .findByLogin(login)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setId(usuario.getId());
+        dto.setNome(usuario.getNome());
+        dto.setLogin(usuario.getLogin());
+        dto.setPassword(usuario.getPassword());
+        dto.setEmail(usuario.getEmail());
+        dto.setAdmin(usuario.getAdmin());
+        dto.setCriadoEm(usuario.getCriadoEm());
+        dto.setAtualizadoEm(usuario.getAtualizadoEm());
+        return dto;
     }
 
     private Usuario buscarUsuariosPorID(Integer id) {

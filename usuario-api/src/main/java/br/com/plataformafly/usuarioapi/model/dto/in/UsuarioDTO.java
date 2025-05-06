@@ -1,7 +1,6 @@
 package br.com.plataformafly.usuarioapi.model.dto.in;
 
 import lombok.Data;
-import lombok.Value;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -9,7 +8,6 @@ import java.time.LocalDateTime;
 /**
  * DTO for {@link br.com.plataformafly.usuarioapi.model.Usuario}
  */
-@Value
 @Data
 public class UsuarioDTO implements Serializable {
 
