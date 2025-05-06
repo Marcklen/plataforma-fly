@@ -36,7 +36,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.username.CASE_INSENSITIVE_ORDER.compare(principal.authorities, principal.username)")
     public ResponseEntity<UsuarioDTO> atualizar(@PathVariable Integer id, @Valid @RequestBody UsuarioUpdateDTO dto) {
         return new ResponseEntity<>(usuarioService.atualizar(id, dto), HttpStatus.OK);
     }

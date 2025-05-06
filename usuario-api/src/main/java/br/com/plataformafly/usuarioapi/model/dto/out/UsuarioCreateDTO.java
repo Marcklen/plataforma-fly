@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.Set;
+
 @Data
 public class UsuarioCreateDTO {
 
@@ -16,5 +18,5 @@ public class UsuarioCreateDTO {
     @NotBlank
     private String email;
     @NotNull
-    private Boolean admin;
+    private Set<String> roles;
 }

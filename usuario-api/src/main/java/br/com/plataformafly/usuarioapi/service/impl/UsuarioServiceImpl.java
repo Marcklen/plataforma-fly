@@ -2,10 +2,13 @@ package br.com.plataformafly.usuarioapi.service.impl;
 
 import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioExistenteException;
 import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioNaoEncontradoException;
+import br.com.plataformafly.usuarioapi.model.Role;
 import br.com.plataformafly.usuarioapi.model.Usuario;
+import br.com.plataformafly.usuarioapi.model.dto.enums.TipoRoles;
 import br.com.plataformafly.usuarioapi.model.dto.in.UsuarioDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioCreateDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioUpdateDTO;
+import br.com.plataformafly.usuarioapi.model.repository.RoleRepository;
 import br.com.plataformafly.usuarioapi.model.repository.UsuarioRepository;
 import br.com.plataformafly.usuarioapi.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +33,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ObjectMapper mapper;
     private final BCryptPasswordEncoder encoder;
+    private final RoleRepository roleRepository;
 
     @Override
     public UsuarioDTO criar(UsuarioCreateDTO dto) {
@@ -35,10 +41,15 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new UsuarioExistenteException("Login já existente.");
         }
 
-        Usuario usuario = mapper.convertValue(dto, Usuario.class);
-        usuario.setPassword(encoder.encode(dto.getPassword()));
-        usuario.setCriadoEm(LocalDateTime.now());
-
+        Set<Role> roles = mapearRoles(dto.getRoles());
+        Usuario usuario = Usuario.builder()
+                .nome(dto.getNome())
+                .login(dto.getLogin())
+                .email(dto.getEmail())
+                .password(encoder.encode(dto.getPassword()))
+                .roles(roles)
+                .criadoEm(LocalDateTime.now())
+                .build();
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
         return mapper.convertValue(usuarioSalvo, UsuarioDTO.class);
     }
@@ -59,14 +70,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         boolean isOwner = usuario.getLogin().equals(getCurrentUsername());
         boolean isAdmin = isAdmin();
 
-        // Acesso negado se não for admin nem dono
         if (!isAdmin && !isOwner) {
-            throw new AccessDeniedException("Você não tem permissão para atualizar este usuário.");
+            throw new AccessDeniedException("Apenas o próprio usuário ou um administrador pode atualizar este cadastro.");
         }
-        // Qualquer um com permissão pode alterar a própria senha
-        if (dto.getPassword() != null) {
-            usuario.setPassword(encoder.encode(dto.getPassword()));
-        }
+
         // Apenas o próprio usuário pode alterar nome/email
         if (isOwner) {
             if (dto.getNome() != null) usuario.setNome(dto.getNome());
@@ -133,4 +140,24 @@ public class UsuarioServiceImpl implements UsuarioService {
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
+
+    private Set<Role> mapearRoles(Set<String> roleNomes) {
+        if (roleNomes == null || roleNomes.isEmpty()) {
+            // Default para ROLE_USER se nenhum papel for enviado
+            return Set.of(roleRepository.findByNome(TipoRoles.ROLE_USER)
+                    .orElseThrow(() -> new IllegalArgumentException("Papel padrão ROLE_USER não encontrado.")));
+        }
+        return roleNomes.stream().map(nome -> {
+            TipoRoles tipo;
+            try {
+                tipo = TipoRoles.valueOf(nome);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Papel inválido: " + nome);
+            }
+
+            return roleRepository.findByNome(tipo)
+                    .orElseThrow(() -> new IllegalArgumentException("Role não encontrada no banco: " + nome));
+        }).collect(Collectors.toSet());
+    }
+
 }

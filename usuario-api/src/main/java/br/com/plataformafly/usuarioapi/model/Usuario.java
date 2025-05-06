@@ -1,11 +1,14 @@
 package br.com.plataformafly.usuarioapi.model;
 
+import br.com.plataformafly.usuarioapi.model.dto.enums.TipoRoles;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -34,12 +37,23 @@ public class Usuario {
     private String email;
 
     @Column(nullable = false)
-    private Boolean admin;
-
-    @Column(nullable = false)
     private LocalDateTime criadoEm;
 
     private LocalDateTime atualizadoEm;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "usuario_roles",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    @Transient
+    public boolean isAdmin() {
+        return this.roles.stream()
+                .anyMatch(role -> role.getNome().equals(TipoRoles.ROLE_ADMIN));
+    }
 
     @Override
     public final boolean equals(Object o) {
