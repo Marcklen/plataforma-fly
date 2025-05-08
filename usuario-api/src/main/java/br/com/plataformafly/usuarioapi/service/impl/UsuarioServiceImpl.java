@@ -6,6 +6,7 @@ import br.com.plataformafly.usuarioapi.model.Role;
 import br.com.plataformafly.usuarioapi.model.Usuario;
 import br.com.plataformafly.usuarioapi.model.dto.enums.TipoRoles;
 import br.com.plataformafly.usuarioapi.model.dto.in.UsuarioDTO;
+import br.com.plataformafly.usuarioapi.model.dto.out.RoleDto;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioCreateDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioUpdateDTO;
 import br.com.plataformafly.usuarioapi.model.repository.RoleRepository;
@@ -79,10 +80,15 @@ public class UsuarioServiceImpl implements UsuarioService {
             if (dto.getNome() != null) usuario.setNome(dto.getNome());
             if (dto.getEmail() != null) usuario.setEmail(dto.getEmail());
         }
-        // Apenas admin pode mudar o campo admin
-        if (dto.getAdmin() != null && isAdmin) {
-            usuario.setAdmin(dto.getAdmin());
+        // Apenas admin pode alterar roles
+        if (dto.getRoles() != null && !dto.getRoles().isEmpty()) {
+            if (!isAdmin) {
+                throw new AccessDeniedException("Somente administradores podem alterar os papéis de um usuário.");
+            }
+            Set<Role> novasRoles = mapearRoles(dto.getRoles());
+            usuario.setRoles(novasRoles);
         }
+
         usuario.setAtualizadoEm(LocalDateTime.now());
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
         System.out.println("Usuário autenticado: " + getCurrentUsername());
@@ -117,9 +123,16 @@ public class UsuarioServiceImpl implements UsuarioService {
         dto.setLogin(usuario.getLogin());
         dto.setPassword(usuario.getPassword());
         dto.setEmail(usuario.getEmail());
-        dto.setAdmin(usuario.getAdmin());
+        dto.setRoles(usuario.getRoles()
+                .stream()
+                .map(role -> new RoleDto(role.getId(), role.getNome()))
+                .collect(Collectors.toSet()));
         dto.setCriadoEm(usuario.getCriadoEm());
         dto.setAtualizadoEm(usuario.getAtualizadoEm());
+//        Set<RoleDto> rolesDTO = usuario.getRoles().stream()
+//                .map(role -> new RoleDto(role.getId(), role.getNome()))
+//                .collect(Collectors.toSet());
+//        dto.setRoles(rolesDTO);
         return dto;
     }
 
@@ -154,7 +167,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Papel inválido: " + nome);
             }
-
             return roleRepository.findByNome(tipo)
                     .orElseThrow(() -> new IllegalArgumentException("Role não encontrada no banco: " + nome));
         }).collect(Collectors.toSet());
