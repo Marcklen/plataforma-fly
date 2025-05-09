@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -106,7 +105,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     // função para buscar usuário por login utilizado no AuthService
     @Override
-//    @Cacheable(value = "usuarios", key = "#login") // armazena o resultado em cache para o login do usuário
+    //TODO @Cacheable(value = "usuarios", key = "#login") // armazena o resultado em cache para o login do usuário -->comentado pois esta dando erro / verificar esse erro
     public UsuarioDTO buscarPorLogin(String login) {
         var usuario = usuarioRepository
                 .findByLogin(login)

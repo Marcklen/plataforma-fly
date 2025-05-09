@@ -1,6 +1,5 @@
 package br.com.plataformafly.usuarioapi.service;
 
-import br.com.plataformafly.usuarioapi.model.Usuario;
 import br.com.plataformafly.usuarioapi.model.dto.in.UsuarioDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioCreateDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioUpdateDTO;
