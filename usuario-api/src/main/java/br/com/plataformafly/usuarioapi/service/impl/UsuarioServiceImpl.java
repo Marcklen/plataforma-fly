@@ -1,5 +1,6 @@
 package br.com.plataformafly.usuarioapi.service.impl;
 
+import br.com.plataformafly.usuarioapi.controller.exceptions.handler.AcessoNegadoCustomException;
 import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioExistenteException;
 import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioNaoEncontradoException;
 import br.com.plataformafly.usuarioapi.model.Usuario;
@@ -10,6 +11,8 @@ import br.com.plataformafly.usuarioapi.model.repository.UsuarioRepository;
 import br.com.plataformafly.usuarioapi.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -51,13 +54,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    @CacheEvict(value = "usuarios", key = "#id") // remove/invalida o resultado do cache para o id do usuário
     public UsuarioDTO atualizar(Integer id, UsuarioUpdateDTO dto) {
         Usuario usuario = buscarUsuariosPorID(id);
+        boolean isVoce = usuario.getLogin().equals(getCurrentUsername());
+        boolean isAdmin = isAdmin(); // para nao chamar duas vezes o mesmo metodo
 
-        // Verifica se pode alterar a senha
+        // Validação para alteração da senha
         if (dto.getPassword() != null) {
-            if (!isAdmin() && !usuario.getLogin().equals(getCurrentUsername())) {
-                throw new AccessDeniedException("Somente administradores podem alterar senhas de outros usuários.");
+            if (!isAdmin && !isVoce) {
+                throw new AcessoNegadoCustomException("Somente administradores podem alterar senhas de outros usuários.");
             }
             usuario.setPassword(encoder.encode(dto.getPassword()));
         }
@@ -66,54 +72,51 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuario.setNome(dto.getNome());
         }
         if (dto.getEmail() != null) {
-            usuario.setLogin(dto.getEmail());
+            usuario.setEmail(dto.getEmail());
         }
         if (dto.getAdmin() != null) {
+            if (!isAdmin) {
+                throw new AcessoNegadoCustomException("Somente administradores podem alterar a flag de administrador.");
+            }
             usuario.setAdmin(dto.getAdmin());
         }
-        usuario.setAtualizadoEm(LocalDateTime.now());
 
+        usuario.setAtualizadoEm(LocalDateTime.now());
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
         return mapper.convertValue(usuarioAtualizado, UsuarioDTO.class);
     }
 
 
     @Override
+    @Cacheable(value = "usuarios", key = "#id") // armazena o resultado em cache para o id do usuário
     public UsuarioDTO buscarPorId(Integer id) {
         Usuario usuario = buscarUsuariosPorID(id);
         return mapper.convertValue(usuario, UsuarioDTO.class);
     }
 
     @Override
+    @CacheEvict(value = "usuarios", key = "#id")
     public void deletar(Integer id) {
+        if (!isAdmin()) {
+            throw new AcessoNegadoCustomException("Somente administradores podem excluir usuários!!!");
+        }
         Usuario usuario = buscarUsuariosPorID(id);
         usuarioRepository.delete(usuario);
     }
 
+    // função para buscar usuário por login utilizado no AuthService
     @Override
+//    @Cacheable(value = "usuarios", key = "#login") // armazena o resultado em cache para o login do usuário
     public UsuarioDTO buscarPorLogin(String login) {
         var usuario = usuarioRepository
                 .findByLogin(login)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-
-        UsuarioDTO dto = new UsuarioDTO();
-        dto.setId(usuario.getId());
-        dto.setNome(usuario.getNome());
-        dto.setLogin(usuario.getLogin());
-        dto.setPassword(usuario.getPassword());
-        dto.setEmail(usuario.getEmail());
-        dto.setAdmin(usuario.getAdmin());
-        dto.setCriadoEm(usuario.getCriadoEm());
-        dto.setAtualizadoEm(usuario.getAtualizadoEm());
-        return dto;
+        return mapper.convertValue(usuario, UsuarioDTO.class);
     }
 
     private Usuario buscarUsuariosPorID(Integer id) {
-        return usuarioRepository
-                .findById(id)
-                .orElseThrow(
-                        () -> new UsuarioNaoEncontradoException("Usuario não encontrado!!!")
-                );
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não encontrado!!!"));
     }
 
     private boolean isAdmin() {

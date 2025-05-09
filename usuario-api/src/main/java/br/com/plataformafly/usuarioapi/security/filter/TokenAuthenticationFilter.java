@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,7 +21,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(@NotNull HttpServletRequest request,
+                                    @NotNull HttpServletResponse response,
+                                    @NotNull FilterChain chain) throws ServletException, IOException {
         String token = tokenService.getTokenFromHeader(request);
 
         if (token != null && tokenService.isTokenValid(token)) {
@@ -30,8 +33,10 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
             var authToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authToken);
+        } else {
+            // IMPORTANTE: garante que requisição anônima não herde contexto anterior
+            SecurityContextHolder.clearContext();
         }
-
         chain.doFilter(request, response);
     }
 }
