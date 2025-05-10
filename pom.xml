@@ -16,6 +16,8 @@
         <module>gateway-api</module>
         <module>auth-api</module>
         <module>usuario-api</module>
+        <module>email-producer-api</module>
+        <module>email-consumer-api</module>
     </modules>
 
     <!-- Propriedades globais -->
