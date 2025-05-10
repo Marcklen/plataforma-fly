@@ -11,8 +11,8 @@ Este repositório representa o **projeto principal** que centraliza os microserv
 ├── gateway-api/          # ✅ API Gateway para roteamento e segurança das requisições
 ├── usuario-api/          # ✅ CRUD de usuários com controle de acesso
 ├── auth-api/             # ✅ Autenticação com JWT e controle de sessões (validação no REDIS)
-├── email-producer-api/   # 🔜 Envia mensagens (emails) para o RabbitMQ  (A implementar)
-├── email-consumer-api/   # 🔜 Consome mensagens e envia e-mails (Kafka) (A implementar)
+├── email-producer-api/   # ✅ Envia mensagens (emails) para o RabbitMQ 
+├── email-consumer-api/   # ✅ Consome mensagens e envia e-mails (Kafka)
 ```
 ---
 # ☁️ Configurações Externas (Spring Cloud Config)
@@ -43,11 +43,11 @@ Se o repositório de configurações estiver privado, defina variáveis de ambie
 | Funcionalidade                                | Status       |
 |----------------------------------------------|--------------|
 | Frontend Angular 7+                          | ❌ Não iniciado |
-| `/email` (envio via RabbitMQ)                | 🔜 Em breve |
-| Kafka (consumidor de mensagens assíncronas)  | 🔜 Em breve |
+| `/email` (envio via RabbitMQ)                | ✅ Integrado|
+| Kafka (consumidor de mensagens assíncronas)  | ✅ Integrado |
 | Config Server externo e dinâmico             | ✅ Integrado |
-| Java Config (ConnectionFactory, etc.)        | 🔜 Em breve |
-| Swagger / OpenAPI                            | 🔜 Em breve |
+| Java Config (ConnectionFactory, etc.)        | ✅ Integrado |
+| Swagger / OpenAPI                            | ✅ Integrado |
 | WebService SOAP (bônus)                      | ❌ Não iniciado |
 | Perfis `dev` e `prod` com `application-*.yml`| ✅ Parcial |
 

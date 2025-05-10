@@ -4,8 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class UsuarioCreateDTO {
+public class UsuarioCreateDTO implements Serializable {
 
     @NotBlank
     private String nome;

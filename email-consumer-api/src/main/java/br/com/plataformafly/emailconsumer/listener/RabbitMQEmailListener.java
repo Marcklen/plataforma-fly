@@ -1,6 +1,6 @@
 package br.com.plataformafly.emailconsumer.listener;
 
-import br.com.plataformafly.emailconsumer.config.RabbitMQConfig;
+import br.com.plataformafly.emailconsumer.config.rabbit.RabbitMQConfig;
 import br.com.plataformafly.emailconsumer.dto.EmailMessageDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

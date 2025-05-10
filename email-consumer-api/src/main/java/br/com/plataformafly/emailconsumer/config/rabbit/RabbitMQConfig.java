@@ -1,4 +1,4 @@
-package br.com.plataformafly.emailconsumer.config;
+package br.com.plataformafly.emailconsumer.config.rabbit;
 
 /**
  * Como o RabbitMQEmailListener consome da fila declarada no producer,

@@ -1,5 +1,6 @@
 package br.com.plataformafly.usuarioapi.controller;
 
+import br.com.plataformafly.usuarioapi.model.dto.in.EmailMessageDTO;
 import br.com.plataformafly.usuarioapi.model.dto.in.UsuarioDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioCreateDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioUpdateDTO;
@@ -54,4 +55,20 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDTO> buscarPorLogin(@PathVariable String login) {
         return ResponseEntity.ok(usuarioService.buscarPorLogin(login));
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/notificar/{id}")
+    public ResponseEntity<UsuarioDTO> notificarUsuarioComum(@PathVariable Integer id, @RequestBody EmailMessageDTO mensagem) {
+        UsuarioDTO usuario = usuarioService.buscarPorId(id);
+        UsuarioDTO enviado = usuarioService.notificarUsuarioComum(usuario, mensagem.getAssunto(), mensagem.getCorpo());
+        return new ResponseEntity<>(enviado, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/notificar/admins")
+    public ResponseEntity<UsuarioDTO> notificarTodosAdmins(@RequestBody EmailMessageDTO mensagem) {
+        UsuarioDTO enviado = usuarioService.notificarUsuarioAdmin(mensagem.getAssunto(), mensagem.getCorpo());
+        return new ResponseEntity<>(enviado, HttpStatus.OK);
+    }
+
 }

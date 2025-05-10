@@ -1,4 +1,4 @@
-package br.com.plataformafly.emailconsumer.config;
+package br.com.plataformafly.emailconsumer.config.kafka;
 
 import br.com.plataformafly.emailconsumer.dto.EmailMessageDTO;
 import org.apache.kafka.clients.producer.ProducerConfig;

@@ -2,8 +2,10 @@ package br.com.plataformafly.usuarioapi.model.dto.out;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class UsuarioUpdateDTO {
+public class UsuarioUpdateDTO implements Serializable {
 
     private String nome;
     private String email;

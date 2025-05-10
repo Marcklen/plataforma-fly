@@ -1,5 +1,6 @@
-package br.com.plataformafly.emailconsumer.config;
+package br.com.plataformafly.emailconsumer.config.kafka;
 
+import br.com.plataformafly.emailconsumer.dto.EmailMessageDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -19,10 +20,10 @@ public class KafkaConsumerConfig {
     private static final String GROUP_ID = "email-group";
 
     @Bean
-    public ConsumerFactory<String, Object> consumerFactory() {
-        JsonDeserializer<Object> deserializer = new JsonDeserializer<>();
+    public ConsumerFactory<String, EmailMessageDTO> consumerFactory() {
+        JsonDeserializer<EmailMessageDTO> deserializer = new JsonDeserializer<>(EmailMessageDTO.class);
         deserializer.setRemoveTypeHeaders(false);
-        deserializer.setUseTypeMapperForKey(true);
+        deserializer.setUseTypeMapperForKey(false);
         deserializer.addTrustedPackages("*"); // Ajuste para segurança em produção
 
         Map<String, Object> props = new HashMap<>();
@@ -34,8 +35,8 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, EmailMessageDTO> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, EmailMessageDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }

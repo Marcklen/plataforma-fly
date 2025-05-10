@@ -14,4 +14,7 @@ public interface UsuarioService {
     UsuarioDTO buscarPorId(Integer id);
     void deletar(Integer id);
     UsuarioDTO buscarPorLogin(String login);
+
+    UsuarioDTO notificarUsuarioComum(UsuarioDTO usuarioDTO, String assunto, String corpo);
+    UsuarioDTO notificarUsuarioAdmin(String assunto, String corpo);
 }

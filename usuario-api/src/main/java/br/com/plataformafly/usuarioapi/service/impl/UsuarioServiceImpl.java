@@ -4,10 +4,12 @@ import br.com.plataformafly.usuarioapi.controller.exceptions.handler.AcessoNegad
 import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioExistenteException;
 import br.com.plataformafly.usuarioapi.controller.exceptions.handler.UsuarioNaoEncontradoException;
 import br.com.plataformafly.usuarioapi.model.Usuario;
+import br.com.plataformafly.usuarioapi.model.dto.in.EmailMessageDTO;
 import br.com.plataformafly.usuarioapi.model.dto.in.UsuarioDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioCreateDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioUpdateDTO;
 import br.com.plataformafly.usuarioapi.model.repository.UsuarioRepository;
+import br.com.plataformafly.usuarioapi.service.EmailService;
 import br.com.plataformafly.usuarioapi.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ObjectMapper mapper;
     private final BCryptPasswordEncoder encoder;
+    private final EmailService emailService;
 
     @Override
     public UsuarioDTO criar(UsuarioCreateDTO dto) {
@@ -40,7 +43,17 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setCriadoEm(LocalDateTime.now());
 
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
-        return mapper.convertValue(usuarioSalvo, UsuarioDTO.class);
+        UsuarioDTO usuarioDTO = mapper.convertValue(usuarioSalvo, UsuarioDTO.class);
+
+        if (Boolean.TRUE.equals(usuarioDTO.getAdmin())) {
+            EmailMessageDTO email = new EmailMessageDTO();
+            email.setRemetente("noreply@plataformafly.com");
+            email.setDestinatario(usuarioDTO.getEmail());
+            email.setAssunto("Cadastro realizado com sucesso!");
+            email.setCorpo("Olá " + usuarioDTO.getNome() + ", sua conta de administrador foi criada com sucesso.");
+            emailService.enviarEmailParaFila(email);
+        }
+        return usuarioDTO;
     }
 
     @Override
@@ -111,6 +124,35 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .findByLogin(login)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
         return mapper.convertValue(usuario, UsuarioDTO.class);
+    }
+
+    @Override
+    public UsuarioDTO notificarUsuarioComum(UsuarioDTO usuarioDTO, String assunto, String corpo) {
+        EmailMessageDTO email = new EmailMessageDTO();
+        email.setRemetente("noreply@plataformafly.com");
+        email.setDestinatario(usuarioDTO.getEmail());
+        email.setAssunto(assunto);
+        email.setCorpo(corpo);
+        emailService.enviarEmailParaFila(email);
+        return usuarioDTO;
+    }
+
+    @Override
+    public UsuarioDTO notificarUsuarioAdmin(String assunto, String corpo) {
+        List<Usuario> admins = usuarioRepository.findAllByAdminIsTrue();
+        if (admins.isEmpty()) {
+            throw new UsuarioNaoEncontradoException("Nenhum administrador encontrado.");
+        }
+        for (Usuario admin : admins) {
+            EmailMessageDTO email = new EmailMessageDTO();
+            email.setRemetente("noreply@plataformafly.com");
+            email.setDestinatario(admin.getEmail());
+            email.setAssunto(assunto);
+            email.setCorpo(corpo);
+            emailService.enviarEmailParaFila(email);
+        }
+        // Retorna o primeiro só como referência
+        return mapper.convertValue(admins.get(0), UsuarioDTO.class);
     }
 
     private Usuario buscarUsuariosPorID(Integer id) {
