@@ -7,12 +7,14 @@ Este repositório representa o **projeto principal** que centraliza os microserv
 
 ```bash
     plataforma-fly/
+├── eureka/               # ✅ Serviço de registro e descoberta (Spring Cloud Eureka)
 ├── config-server/        # ✅ Servidor de configuração centralizado (Spring Cloud Config)
 ├── gateway-api/          # ✅ API Gateway para roteamento e segurança das requisições
 ├── usuario-api/          # ✅ CRUD de usuários com controle de acesso
 ├── auth-api/             # ✅ Autenticação com JWT e controle de sessões (validação no REDIS)
 ├── email-producer-api/   # ✅ Envia mensagens (emails) para o RabbitMQ 
 ├── email-consumer-api/   # ✅ Consome mensagens e envia e-mails (Kafka)
+└── startup.py            # ❌ Script de inicialização em Python (não iniciado)
 ```
 ---
 # ☁️ Configurações Externas (Spring Cloud Config)
@@ -61,6 +63,56 @@ Cada módulo será conteinerizado individualmente. Um `docker-compose.yml` orque
 - RabbitMQ
 - Kafka
 - Todos os serviços (`auth`, `usuario`, `email`, etc)
+
+--- 
+## ✅ Ordem correta de inicialização dos serviços
+
+A sequência de inicialização garante que as configurações externas estejam disponíveis **antes** de qualquer serviço que dependa delas.
+
+### 1️⃣ config-server
+- 🔹 **Função**: Central de configuração externa via Spring Cloud Config
+- 🔹 **Motivo**: Fornece arquivos como `*-dev.yml` para os serviços via `bootstrap.yml`
+- 🔹 **Dependências**: Nenhuma (deve ser o primeiro)
+
+---
+
+### 2️⃣ eureka-server
+- 🔹 **Função**: Serviço de registro e descoberta (Service Discovery)
+- 🔹 **Motivo**: Só pode ser inicializado **após** o `config-server`, pois também usa `bootstrap.yml` com `import: configserver`
+- 🔹 **Dependências**: `config-server`
+
+---
+
+### 3️⃣ gateway-api
+- 🔹 **Função**: Roteador central de APIs via Spring Cloud Gateway
+- 🔹 **Depende de**:
+    - `config-server` → para importar configurações (via `bootstrap.yml`)
+    - `eureka-server` → para localizar os serviços registrados
+
+---
+
+### 4️⃣ Serviços de negócio
+
+- `auth-api`
+- `usuario-api`
+- `email-producer-api`
+- `email-consumer-api`
+
+🔹 **Dependências**:
+- `config-server` → para suas configurações
+- `eureka-server` → para se registrarem
+- Recursos externos conforme o caso:
+    - `Redis`: `auth-api`, `usuario-api`
+    - `Kafka` e `RabbitMQ`: `email-consumer-api` e `email-producer-api`
+---
+
+### ✅ Observação importante
+Todos os serviços devem ser iniciados com:
+
+```bash
+
+-Dspring.profiles.active=dev
+```
 
 ---
 ## 🧠 Observação Final
