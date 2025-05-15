@@ -24,6 +24,16 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NotNull HttpServletRequest request,
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain chain) throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        // IGNORA o filtro para POST /usuario (cadastro de novo usuário)
+        if ("/usuario".equals(path) && "POST".equalsIgnoreCase(method)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         String token = tokenService.getTokenFromHeader(request);
 
         if (token != null && tokenService.isTokenValid(token)) {
