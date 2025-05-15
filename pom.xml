@@ -18,6 +18,7 @@
         <module>usuario-api</module>
         <module>email-producer-api</module>
         <module>email-consumer-api</module>
+        <module>eureka-server</module>
     </modules>
 
     <!-- Propriedades globais -->

@@ -69,6 +69,89 @@ services:
     networks:
       - observabilidade
 
+  config-server:
+    build:
+      context: ./config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - mensageria
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config-server
+    networks:
+      - mensageria
+
+  gateway-api:
+    build:
+      context: ./gateway-api
+    container_name: gateway-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - usuario-api
+      - auth-api
+    networks:
+      - mensageria
+      - cache
+      - kafka-net
+      - observabilidade
+
+  usuario-api:
+    build:
+      context: ./usuario-api
+    container_name: usuario-api
+    ports:
+      - "8081:8081"
+    networks:
+      - mensageria
+    depends_on:
+      - config-server
+      - eureka-server
+
+  auth-api:
+    build:
+      context: ./auth-api
+    container_name: auth-api
+    ports:
+      - "8082:8082"
+    depends_on:
+      - config-server
+      - eureka-server
+    networks:
+      - mensageria
+
+  email-consumer-api:
+    build:
+      context: ./email-consumer-api
+    container_name: email-consumer-api
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+    networks:
+      - mensageria
+      - kafka-net
+
+  email-producer-api:
+    build:
+      context: ./email-producer-api
+    container_name: email-producer-api
+    ports:
+      - "8084:8084"
+    depends_on:
+      - kafka
+    networks:
+      - mensageria
+      - kafka-net
+
 networks:
   mensageria:
     driver: bridge
