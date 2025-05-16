@@ -18,6 +18,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     private final JwtUtil jwtUtil;
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/auth/login",
+            "/usuario", "/usuario/", "/usuario/**",
             "/actuator", "/actuator/", "/actuator/**",
             "/swagger-ui", "/swagger-ui/**", "/v3/api-docs/**"
     );
