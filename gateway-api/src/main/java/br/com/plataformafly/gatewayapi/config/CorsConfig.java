@@ -12,11 +12,16 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+    private static final List<String> ORIGENS_PERMITIDAS = List.of(
+            "http://localhost:4200", // Angular
+            "http://localhost:3000" // Next.js
+    );
+
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOrigins(ORIGENS_PERMITIDAS);
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
