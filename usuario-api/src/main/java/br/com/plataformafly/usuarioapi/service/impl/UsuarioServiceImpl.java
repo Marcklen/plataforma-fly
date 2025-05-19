@@ -38,6 +38,10 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new UsuarioExistenteException("Login já existente.");
         }
 
+        if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new UsuarioExistenteException("E-mail já cadastrado.");
+        }
+
         Usuario usuario = mapper.convertValue(dto, Usuario.class);
         usuario.setPassword(encoder.encode(dto.getPassword()));
         usuario.setCriadoEm(LocalDateTime.now());
