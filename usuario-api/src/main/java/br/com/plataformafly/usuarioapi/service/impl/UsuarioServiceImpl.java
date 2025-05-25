@@ -84,6 +84,16 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuario.setPassword(encoder.encode(dto.getPassword()));
         }
 
+        if (dto.getLogin() != null) {
+            if (!isAdmin && !isVoce) {
+                throw new AcessoNegadoCustomException("Somente administradores podem alterar logins de outros usuários.");
+            }
+            if (usuarioRepository.findByLogin(dto.getLogin()).isPresent()) {
+                throw new UsuarioExistenteException("Login já existente.");
+            }
+            usuario.setLogin(dto.getLogin());
+        }
+
         if (dto.getNome() != null) {
             usuario.setNome(dto.getNome());
         }
@@ -138,6 +148,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         email.setAssunto(assunto);
         email.setCorpo(corpo);
         emailService.enviarEmailParaFila(email);
+        emailService.salvarEmail(usuarioDTO.getEmail(), assunto, corpo);
         return usuarioDTO;
     }
 
@@ -154,6 +165,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             email.setAssunto(assunto);
             email.setCorpo(corpo);
             emailService.enviarEmailParaFila(email);
+            emailService.salvarEmail(admin.getEmail(), assunto, corpo);
         }
         // Retorna o primeiro só como referência
         return mapper.convertValue(admins.get(0), UsuarioDTO.class);

@@ -2,8 +2,10 @@ package br.com.plataformafly.usuarioapi.controller;
 
 import br.com.plataformafly.usuarioapi.model.dto.in.EmailMessageDTO;
 import br.com.plataformafly.usuarioapi.model.dto.in.UsuarioDTO;
+import br.com.plataformafly.usuarioapi.model.dto.out.EmailDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioCreateDTO;
 import br.com.plataformafly.usuarioapi.model.dto.out.UsuarioUpdateDTO;
+import br.com.plataformafly.usuarioapi.service.EmailService;
 import br.com.plataformafly.usuarioapi.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.List;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final EmailService emailService;
 
     @PostMapping
     public ResponseEntity<UsuarioDTO> criar(@Valid @RequestBody UsuarioCreateDTO dto) {
@@ -69,6 +72,20 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDTO> notificarTodosAdmins(@RequestBody EmailMessageDTO mensagem) {
         UsuarioDTO enviado = usuarioService.notificarUsuarioAdmin(mensagem.getAssunto(), mensagem.getCorpo());
         return new ResponseEntity<>(enviado, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/email")
+    public ResponseEntity<List<EmailDTO>> listarTodos() {
+        return ResponseEntity.ok(emailService.listarTodos());
+    }
+
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/email/{id}")
+    public ResponseEntity<EmailDTO> buscarEmailPorId(@PathVariable Integer id) {
+        EmailDTO email = emailService.buscarPorId(id);
+        return ResponseEntity.ok(email);
     }
 
 }
