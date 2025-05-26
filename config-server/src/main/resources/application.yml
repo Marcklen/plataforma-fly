@@ -1,9 +1,17 @@
 spring:
   application:
     name: config-server
-
   profiles:
     active: dev
 
 server:
   port: 8088
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

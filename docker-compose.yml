@@ -1,25 +1,134 @@
-version: '3.8'
-
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
+
+  config-server:
+    build:
+      context: ./config-server
+    container_name: config-server
     ports:
-      - "5672:5672"    # Porta padrão para AMQP
-      - "15672:15672"  # UI web para gerenciamento
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      - "8888:8888"
+    restart: always
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8088/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - mensageria
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    restart: always
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mensageria
+
+  gateway-api:
+    build:
+      context: ./gateway-api
+    container_name: gateway-api
+    ports:
+      - "8080:8080"
+    restart: always
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    entrypoint: [ "./wait-for-it.sh", "eureka-server", "8761", "java", "-jar", "app.jar" ]
+    networks:
+      - mensageria
+      - cache
+      - kafka-net
+      - observabilidade
+
+  usuario-api:
+    build:
+      context: ./usuario-api
+    container_name: usuario-api
+    ports:
+      - "8081:8081"
+    restart: always
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    entrypoint: [ "./wait-for-it.sh", "eureka-server", "8761", "java", "-jar", "app.jar" ]
+    networks:
+      - mensageria
+
+  auth-api:
+    build:
+      context: ./auth-api
+    container_name: auth-api
+    ports:
+      - "8082:8082"
+    restart: always
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    entrypoint: [ "./wait-for-it.sh", "eureka-server", "8761", "java", "-jar", "app.jar" ]
+    networks:
+      - mensageria
+
+  email-producer-api:
+    build:
+      context: ./email-producer-api
+    container_name: email-producer-api
+    ports:
+      - "8083:8083"
+    restart: always
+    depends_on:
+      kafka:
+        condition: service_started
+    entrypoint: [ "./wait-for-it.sh", "kafka", "9092", "java", "-jar", "app.jar" ]
+    networks:
+      - mensageria
+      - kafka-net
+
+  email-consumer-api:
+    build:
+      context: ./email-consumer-api
+    container_name: email-consumer-api
+    ports:
+      - "8084:8084"
+    restart: always
+    depends_on:
+      kafka:
+        condition: service_started
+    entrypoint: [ "./wait-for-it.sh", "kafka", "9092", "java", "-jar", "app.jar" ]
+    networks:
+      - mensageria
+      - kafka-net
 
   redis:
     image: redis:7.2
     container_name: redis-dev
     ports:
       - "6379:6379"
+    restart: always
     networks:
       - cache
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    restart: always
+    networks:
+      - mensageria
 
   zookeeper:
     image: bitnami/zookeeper:3.8.1
@@ -28,6 +137,7 @@ services:
       - "2181:2181"
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
+    restart: always
     networks:
       - kafka-net
 
@@ -41,9 +151,10 @@ services:
     environment:
       KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CFG_BROKER_ID: 1
       ALLOW_PLAINTEXT_LISTENER: "yes"
+    restart: always
     networks:
       - kafka-net
 
@@ -54,6 +165,7 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    restart: always
     networks:
       - observabilidade
 
@@ -66,91 +178,12 @@ services:
       - grafana-storage:/var/lib/grafana
     depends_on:
       - prometheus
+    restart: always
     networks:
       - observabilidade
 
-  config-server:
-    build:
-      context: ./config-server
-    container_name: config-server
-    ports:
-      - "8888:8888"
-    networks:
-      - mensageria
-
-  eureka-server:
-    build:
-      context: ./eureka-server
-    container_name: eureka-server
-    ports:
-      - "8761:8761"
-    depends_on:
-      - config-server
-    networks:
-      - mensageria
-
-  gateway-api:
-    build:
-      context: ./gateway-api
-    container_name: gateway-api
-    ports:
-      - "8080:8080"
-    depends_on:
-      - usuario-api
-      - auth-api
-    networks:
-      - mensageria
-      - cache
-      - kafka-net
-      - observabilidade
-
-  usuario-api:
-    build:
-      context: ./usuario-api
-    container_name: usuario-api
-    ports:
-      - "8081:8081"
-    networks:
-      - mensageria
-    depends_on:
-      - config-server
-      - eureka-server
-
-  auth-api:
-    build:
-      context: ./auth-api
-    container_name: auth-api
-    ports:
-      - "8082:8082"
-    depends_on:
-      - config-server
-      - eureka-server
-    networks:
-      - mensageria
-
-  email-consumer-api:
-    build:
-      context: ./email-consumer-api
-    container_name: email-consumer-api
-    ports:
-      - "8083:8083"
-    depends_on:
-      - kafka
-    networks:
-      - mensageria
-      - kafka-net
-
-  email-producer-api:
-    build:
-      context: ./email-producer-api
-    container_name: email-producer-api
-    ports:
-      - "8084:8084"
-    depends_on:
-      - kafka
-    networks:
-      - mensageria
-      - kafka-net
+volumes:
+  grafana-storage:
 
 networks:
   mensageria:
@@ -161,6 +194,3 @@ networks:
     driver: bridge
   observabilidade:
     driver: bridge
-
-volumes:
-  grafana-storage:
