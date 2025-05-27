@@ -8,4 +8,4 @@ RUN chmod +x /wait-for-it.sh
 RUN apt-get update && apt-get install -y netcat --no-install-recommends && rm -rf /var/lib/apt/lists/*
 COPY target/*.jar app.jar
 
-ENTRYPOINT ["/wait-for-it.sh", "config-server", "8088", "--", "java", "-jar", "app.jar"]
+ENTRYPOINT ["/wait-for-it.sh", "config-server", "8088", "java", "-jar", "app.jar"]
