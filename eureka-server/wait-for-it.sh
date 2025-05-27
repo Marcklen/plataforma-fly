@@ -1,5 +1,4 @@
 #!/bin/sh
-# Original: https://github.com/vishnubob/wait-for-it
 
 HOST=$1
 PORT=$2
@@ -12,4 +11,4 @@ until nc -z "$HOST" "$PORT"; do
 done
 
 echo "$HOST:$PORT está disponível, executando comando: $CMD"
-exec $CMD
+exec "$@"

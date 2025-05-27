@@ -56,6 +56,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             email.setAssunto("Cadastro realizado com sucesso!");
             email.setCorpo("Olá " + usuarioDTO.getNome() + ", sua conta de administrador foi criada com sucesso.");
             emailService.enviarEmailParaFila(email);
+            emailService.salvarEmail(usuarioDTO.getEmail(), email.getAssunto(), email.getCorpo());
         }
         return usuarioDTO;
     }
@@ -77,14 +78,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         boolean isAdmin = isAdmin(); // para nao chamar duas vezes o mesmo metodo
 
         // Validação para alteração da senha
-        if (dto.getPassword() != null) {
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
             if (!isAdmin && !isVoce) {
                 throw new AcessoNegadoCustomException("Somente administradores podem alterar senhas de outros usuários.");
             }
             usuario.setPassword(encoder.encode(dto.getPassword()));
         }
 
-        if (dto.getLogin() != null) {
+        if (dto.getLogin() != null && !dto.getLogin().isEmpty() && !dto.getLogin().equals(usuario.getLogin())) {
             if (!isAdmin && !isVoce) {
                 throw new AcessoNegadoCustomException("Somente administradores podem alterar logins de outros usuários.");
             }
@@ -94,10 +95,13 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuario.setLogin(dto.getLogin());
         }
 
-        if (dto.getNome() != null) {
+        if (dto.getNome() != null && !dto.getNome().isEmpty()) {
             usuario.setNome(dto.getNome());
         }
-        if (dto.getEmail() != null) {
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+            if (!dto.getEmail().equals(usuario.getEmail()) && usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
+                throw new UsuarioExistenteException("E-mail já cadastrado.");
+            }
             usuario.setEmail(dto.getEmail());
         }
         if (dto.getAdmin() != null) {
