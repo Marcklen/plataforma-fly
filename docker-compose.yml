@@ -73,6 +73,7 @@ services:
       retries: 5
     networks:
       - mensageria
+      - cache
 
   auth-api:
     build:
@@ -91,6 +92,7 @@ services:
       retries: 5
     networks:
       - mensageria
+      - cache
 
   email-producer-api:
     build:
