@@ -1,6 +1,7 @@
 spring:
   application:
     name: usuario-api
-  cloud:
-    config:
-      uri: http://config-server:8088
+  profiles:
+    active: dev
+  config:
+    import: optional:configserver:http://config-server:8088
