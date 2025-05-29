@@ -1,0 +1,24 @@
+# Output do build do Maven
+# Ignorar o restante da pasta target
+target/
+# ...mas permitir o .jar gerado
+!target/*.jar
+
+# IDEs
+.idea/
+*.iml
+
+# Git (apenas histórico e estrutura interna)
+.git/
+
+# Maven Wrapper (não usado no Docker)
+.mvn/
+mvnw
+mvnw.cmd
+
+# Arquivos que não são necessários para o build da imagem
+.gitignore
+.gitattributes
+README.md
+prometheus.yml
+docker-compose.yml

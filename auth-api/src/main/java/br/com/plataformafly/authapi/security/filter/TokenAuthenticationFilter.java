@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
@@ -20,11 +21,19 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService userDetailsService;
 
+    private static final List<String> AUTH_WHITELIST = List.of(
+            "/auth/login",
+            "/usuario",
+            "/actuator/health",
+            "/actuator/**"
+    );
+
+
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        // Evita aplicar o filtro no endpoint de login
-        if ("/auth/login".equals(path)) {
+        // Ignorar requisições da lista de exceções
+        if (AUTH_WHITELIST.stream().anyMatch(path::equalsIgnoreCase)) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -1,6 +1,12 @@
 spring:
   application:
     name: email-producer-api
-  cloud:
-    config:
-      uri: http://config-server:8088
+  profiles:
+    active: dev
+  config:
+    import: optional:configserver:http://config-server:8088
+
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://eureka-server:8761/eureka/
