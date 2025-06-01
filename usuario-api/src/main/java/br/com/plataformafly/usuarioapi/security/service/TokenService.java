@@ -59,7 +59,7 @@ public class TokenService {
     }
 
     private Jws<Claims> parseJws(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(Encoders.BASE64.encode(secret.getBytes()).getBytes(StandardCharsets.UTF_8));
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
     }
 }

@@ -28,12 +28,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             "/actuator/**"
     );
 
-
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
         // Ignorar requisições da lista de exceções
-        if (AUTH_WHITELIST.stream().anyMatch(path::equalsIgnoreCase)) {
+        if (AUTH_WHITELIST.stream().anyMatch(path::startsWith)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -43,12 +42,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && tokenProvider.isTokenValid(token)) {
             String username = tokenProvider.getTokenUsername(token);
             var userDetails = userDetailsService.loadUserByUsername(username);
+
             // Cria o objeto de autenticação
             var authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities()
             );
             // Define o objeto de autenticação no contexto de segurança
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            SecurityContextHolder.clearContext(); // Garante que requisições sem token não herdam contexto anterior
         }
         // Continua a execução do filtro
         filterChain.doFilter(request, response);

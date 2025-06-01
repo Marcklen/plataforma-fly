@@ -1,13 +1,14 @@
 package br.com.plataformafly.authapi.security.service;
 
+import br.com.plataformafly.authapi.controller.exceptions.handler.UsuarioNaoEncontradoException;
 import br.com.plataformafly.authapi.model.dto.UsuarioDTO;
-import br.com.plataformafly.authapi.security.dto.UserDetailsDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -20,25 +21,26 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final RestTemplate restTemplate;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        String baseUrl = "http://localhost:8081/usuario/login/" + username;
-        try {
-            ResponseEntity<UsuarioDTO> response = restTemplate.getForEntity(baseUrl, UsuarioDTO.class);
-            UsuarioDTO dto = response.getBody();
+    @Value("${usuario.api.url}")
+    private String usuarioApiUrl;
 
-            if (dto == null) {
-                throw new UsernameNotFoundException("Usuário não encontrado");
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsuarioNaoEncontradoException {
+        try {
+            String url = usuarioApiUrl + "/login/" + username;
+            UsuarioDTO usuario = restTemplate.getForObject(url, UsuarioDTO.class);
+
+            if (usuario == null || usuario.login() == null || !usuario.login().equals(username)) {
+                throw new UsuarioNaoEncontradoException("Usuário não encontrado");
             }
 
-            return new UserDetailsDTO(
-                    dto.login(),
-                    dto.password(),
-                    List.of(dto.admin() ? new SimpleGrantedAuthority("ROLE_ADMIN") : new SimpleGrantedAuthority("ROLE_USER"))
-
+            List<GrantedAuthority> authorities = List.of(
+                    new SimpleGrantedAuthority(usuario.admin() ? "ROLE_ADMIN" : "ROLE_USER")
             );
+
+            return new User(usuario.login(), usuario.password(), authorities);
         } catch (HttpClientErrorException.NotFound e) {
-            throw new UsernameNotFoundException("Usuário não encontrado");
+            throw new UsuarioNaoEncontradoException("Usuário não encontrado");
         } catch (Exception e) {
             throw new RuntimeException("Erro ao buscar usuário", e);
         }

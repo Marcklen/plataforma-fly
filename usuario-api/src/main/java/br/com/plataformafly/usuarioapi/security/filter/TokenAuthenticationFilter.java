@@ -21,30 +21,22 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
 
     @Override
-    protected void doFilterInternal(@NotNull HttpServletRequest request,
-                                    @NotNull HttpServletResponse response,
-                                    @NotNull FilterChain chain) throws ServletException, IOException {
-
-        String path = request.getRequestURI();
-        String method = request.getMethod();
-
-        // IGNORA o filtro para POST /usuario (cadastro de novo usuário)
-        if ("/usuario".equals(path) && "POST".equalsIgnoreCase(method)) {
-            chain.doFilter(request, response);
-            return;
-        }
-
+    protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain chain)
+            throws ServletException, IOException {
         String token = tokenService.getTokenFromHeader(request);
 
         if (token != null && tokenService.isTokenValid(token)) {
             String username = tokenService.getTokenUsername(token);
             List<String> roles = tokenService.getTokenRoles(token);
-            var authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
+
+            var authorities = roles
+                    .stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
 
             var authToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } else {
-            // IMPORTANTE: garante que requisição anônima não herde contexto anterior
             SecurityContextHolder.clearContext();
         }
         chain.doFilter(request, response);
