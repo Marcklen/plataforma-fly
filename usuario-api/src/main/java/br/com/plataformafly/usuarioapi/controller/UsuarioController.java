@@ -41,7 +41,7 @@ public class UsuarioController {
         return new ResponseEntity<>(usuarioService.buscarPorId(id), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioDTO> atualizar(@PathVariable Integer id, @Valid @RequestBody UsuarioUpdateDTO dto) {
         return new ResponseEntity<>(usuarioService.atualizar(id, dto), HttpStatus.OK);
