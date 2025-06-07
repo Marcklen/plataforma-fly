@@ -2,6 +2,9 @@
 
 Este repositório representa o **projeto principal** que centraliza os microserviços que compõem a Plataforma Fly — uma arquitetura modular baseada em Spring Boot, voltada para autenticação, usuários e comunicação assíncrona.
 
+> Este projeto é fruto do **"Treino Desenvolvedor"**, um desafio técnico com foco em arquitetura em microsserviços, autenticação, mensageria assíncrona, cache distribuído e configuração externa.
+>
+> 📄 Documento original disponível [neste Gist](https://gist.github.com/Marcklen/7bd61084e9561e5be02d0b0c1d36650d)
 ---
 ## 📦 Estrutura do Projeto
 
@@ -43,21 +46,21 @@ Se o repositório de configurações estiver privado, defina variáveis de ambie
 ## 🧩 Roadmap de Implementação
 
 | Funcionalidade                                | Status       |
-|----------------------------------------------|--------------|
-| Frontend Angular 7+                          | ❌ Não iniciado |
-| `/email` (envio via RabbitMQ)                | ✅ Integrado|
-| Kafka (consumidor de mensagens assíncronas)  | ✅ Integrado |
-| Config Server externo e dinâmico             | ✅ Integrado |
-| Java Config (ConnectionFactory, etc.)        | ✅ Integrado |
-| Swagger / OpenAPI                            | ✅ Integrado |
-| WebService SOAP (bônus)                      | ❌ Não iniciado |
-| Perfis `dev` e `prod` com `application-*.yml`| ✅ Parcial |
+|-----------------------------------------------|--------------|
+| Frontend Angular 15+                          | ✅ Integrado |
+| `/email` (envio via RabbitMQ)                 | ✅ Integrado|
+| Kafka (consumidor de mensagens assíncronas)   | ✅ Integrado |
+| Config Server externo e dinâmico              | ✅ Integrado |
+| Java Config (ConnectionFactory, etc.)         | ✅ Integrado |
+| Swagger / OpenAPI                             | ✅ Integrado |
+| WebService SOAP (bônus)                       | ❌ Não iniciado |
+| Perfis `dev` e `prod` com `application-*.yml` | ✅ Parcial |
 
 ---
 
 ## 🐳 Docker
 
-Cada módulo será conteinerizado individualmente. Um `docker-compose.yml` orquestrará:
+Cada módulo será conteinerizado individualmente. O arquivo `docker-compose.yml` orquestrará:
 
 - Redis
 - RabbitMQ
