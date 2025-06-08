@@ -2,4 +2,5 @@ spring:
   application:
     name: eureka-server
   config:
-    import: configserver:http://config-server:8088
+#    import: configserver:http://config-server:8088 --> Esta linha é para o docker-compose enxergar o config-server dentro do container
+    import: configserver:${CONFIG_SERVER_URI:http://localhost:8088}

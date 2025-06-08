@@ -1,7 +1,7 @@
-spring:
-  profiles:
-    active: dev
-
-auth:
-  jwt:
-    secret: vK*FzP!7s9WqBzE%aLx#RtG2nUj@XhCm
+#spring:
+#  profiles:
+#    active: dev
+#
+#auth:
+#  jwt:
+#    secret: vK*FzP!7s9WqBzE%aLx#RtG2nUj@XhCm

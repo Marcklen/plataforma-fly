@@ -1,0 +1,9 @@
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Marcklen/plataforma-fly-configs
+          default-label: main
+          search-paths: .
+          clone-on-start: true
