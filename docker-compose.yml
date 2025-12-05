@@ -215,8 +215,24 @@ services:
     networks:
       - observabilidade
 
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: plataforma_fly
+      POSTGRES_USER: plataforma
+      POSTGRES_PASSWORD: imagine-uma-senha-forte-aqui
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - mensageria
+
 volumes:
   grafana-storage:
+  postgres-data:
 
 networks:
   mensageria:

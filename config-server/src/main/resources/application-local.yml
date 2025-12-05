@@ -7,3 +7,4 @@ spring:
           default-label: main
           search-paths: .
           clone-on-start: true
+          skipSslValidation: true
