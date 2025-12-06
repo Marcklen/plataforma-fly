@@ -47,6 +47,7 @@ services:
         condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
+      SPRING_PROFILES_ACTIVE: prod
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
@@ -70,6 +71,7 @@ services:
         condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
+      SPRING_PROFILES_ACTIVE: prod
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 10s
@@ -91,6 +93,7 @@ services:
         condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
+      SPRING_PROFILES_ACTIVE: prod
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 15s
@@ -111,6 +114,9 @@ services:
     depends_on:
       kafka:
         condition: service_started
+    environment:
+      CONFIG_SERVER_URI: http://config-server:8088
+      SPRING_PROFILES_ACTIVE: prod
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 15s
@@ -131,6 +137,9 @@ services:
     depends_on:
       kafka:
         condition: service_started
+    environment:
+      CONFIG_SERVER_URI: http://config-server:8088
+      SPRING_PROFILES_ACTIVE: prod
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
       interval: 15s
