@@ -7,6 +7,8 @@ services:
     ports:
       - "8088:8088"
     restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
       interval: 10s
