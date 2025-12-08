@@ -7,8 +7,10 @@ services:
     ports:
       - "8088:8088"
     restart: always
+    mem_limit: 200m
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      JAVA_OPTS: "-Xmx150m -Xms150m"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
       interval: 10s
@@ -24,11 +26,13 @@ services:
     ports:
       - "8761:8761"
     restart: always
+    mem_limit: 200m
     depends_on:
       config-server:
         condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
+      JAVA_OPTS: "-Xmx150m -Xms150m"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
@@ -44,12 +48,14 @@ services:
     ports:
       - "8080:8080"
     restart: always
+    mem_limit: 200m
     depends_on:
       eureka-server:
         condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
       SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: "-Xmx150m -Xms150m"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
@@ -58,8 +64,8 @@ services:
     networks:
       - mensageria
       - cache
-      - kafka-net
-      - observabilidade
+#      - kafka-net
+#      - observabilidade
 
   usuario-api:
     build:
@@ -68,14 +74,16 @@ services:
     ports:
       - "8081:8081"
     restart: always
+    mem_limit: 200m
     depends_on:
       eureka-server:
         condition: service_healthy
       postgres:
-        condition: service_started
+        condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
       SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: "-Xmx150m -Xms150m"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 10s
@@ -92,14 +100,16 @@ services:
     ports:
       - "8082:8082"
     restart: always
+    mem_limit: 200m
     depends_on:
       eureka-server:
         condition: service_healthy
       postgres:
-        condition: service_started
+        condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
       SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: "-Xmx150m -Xms150m"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 15s
@@ -110,51 +120,51 @@ services:
       - mensageria
       - cache
 
-  email-producer-api:
-    build:
-      context: ./email-producer-api
-    container_name: email-producer-api
-    ports:
-      - "8083:8083"
-    restart: always
-    depends_on:
-      kafka:
-        condition: service_started
-    environment:
-      CONFIG_SERVER_URI: http://config-server:8088
-      SPRING_PROFILES_ACTIVE: prod
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
-      interval: 15s
-      timeout: 10s
-      start_period: 40s
-      retries: 10
-    networks:
-      - mensageria
-      - kafka-net
+#  email-producer-api:
+#    build:
+#      context: ./email-producer-api
+#    container_name: email-producer-api
+#    ports:
+#      - "8083:8083"
+#    restart: always
+#    depends_on:
+#      kafka:
+#        condition: service_started
+#    environment:
+#      CONFIG_SERVER_URI: http://config-server:8088
+#      SPRING_PROFILES_ACTIVE: prod
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+#      interval: 15s
+#      timeout: 10s
+#      start_period: 40s
+#      retries: 10
+#    networks:
+#      - mensageria
+#      - kafka-net
 
-  email-consumer-api:
-    build:
-      context: ./email-consumer-api
-    container_name: email-consumer-api
-    ports:
-      - "8084:8084"
-    restart: always
-    depends_on:
-      kafka:
-        condition: service_started
-    environment:
-      CONFIG_SERVER_URI: http://config-server:8088
-      SPRING_PROFILES_ACTIVE: prod
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
-      interval: 15s
-      timeout: 10s
-      start_period: 40s
-      retries: 10
-    networks:
-      - mensageria
-      - kafka-net
+#  email-consumer-api:
+#    build:
+#      context: ./email-consumer-api
+#    container_name: email-consumer-api
+#    ports:
+#      - "8084:8084"
+#    restart: always
+#    depends_on:
+#      kafka:
+#        condition: service_started
+#    environment:
+#      CONFIG_SERVER_URI: http://config-server:8088
+#      SPRING_PROFILES_ACTIVE: prod
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+#      interval: 15s
+#      timeout: 10s
+#      start_period: 40s
+#      retries: 10
+#    networks:
+#      - mensageria
+#      - kafka-net
 
   redis:
     image: redis:7.2
@@ -172,71 +182,71 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
     restart: always
     networks:
       - mensageria
 
-  zookeeper:
-    image: bitnami/zookeeper:3.8.1-debian-11-r18
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ALLOW_ANONYMOUS_LOGIN: "yes"
-    restart: always
-    networks:
-      - kafka-net
+#  zookeeper:
+#    image: bitnami/zookeeper:3.8.1-debian-11-r18
+#    container_name: zookeeper
+#    ports:
+#      - "2181:2181"
+#    environment:
+#      ALLOW_ANONYMOUS_LOGIN: "yes"
+#    restart: always
+#    networks:
+#      - kafka-net
 
-  kafka:
-    image: bitnami/kafka:3.6.0
-    container_name: kafka
-    ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CFG_BROKER_ID: 1
-      ALLOW_PLAINTEXT_LISTENER: "yes"
-    restart: always
-    networks:
-      - kafka-net
+#  kafka:
+#    image: bitnami/kafka:3.6.0
+#    container_name: kafka
+#    ports:
+#      - "9092:9092"
+#    depends_on:
+#      - zookeeper
+#    environment:
+#      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+#      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
+#      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+#      KAFKA_CFG_BROKER_ID: 1
+#      ALLOW_PLAINTEXT_LISTENER: "yes"
+#    restart: always
+#    networks:
+#      - kafka-net
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    restart: always
-    networks:
-      - observabilidade
+#  prometheus:
+#    image: prom/prometheus
+#    container_name: prometheus
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - "9090:9090"
+#    restart: always
+#    networks:
+#      - observabilidade
 
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-storage:/var/lib/grafana
-    depends_on:
-      - prometheus
-    restart: always
-    networks:
-      - observabilidade
+#  grafana:
+#    image: grafana/grafana
+#    container_name: grafana
+#    ports:
+#      - "3000:3000"
+#    volumes:
+#      - grafana-storage:/var/lib/grafana
+#    depends_on:
+#      - prometheus
+#    restart: always
+#    networks:
+#      - observabilidade
 
   postgres:
     image: postgres:16
     container_name: postgres
     environment:
-      POSTGRES_DB: plataforma_fly
-      POSTGRES_USER: plataforma
-      POSTGRES_PASSWORD: imagine-uma-senha-forte-aqui
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -252,9 +262,9 @@ volumes:
 networks:
   mensageria:
     driver: bridge
-  kafka-net:
-    driver: bridge
+#  kafka-net:
+#    driver: bridge
   cache:
     driver: bridge
-  observabilidade:
-    driver: bridge
+#  observabilidade:
+#    driver: bridge
