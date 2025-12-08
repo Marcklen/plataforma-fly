@@ -39,7 +39,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 60s
+      start_period: 300s
     networks:
       - mensageria
 
@@ -63,7 +63,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 60s
+      start_period: 300s
     networks:
       - mensageria
       - cache
@@ -92,7 +92,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 60s
+      start_period: 120s
     networks:
       - mensageria
       - cache
@@ -119,7 +119,7 @@ services:
       interval: 15s
       timeout: 10s
       retries: 10
-      start_period: 60s
+      start_period: 120s
     networks:
       - mensageria
       - cache
