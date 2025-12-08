@@ -179,7 +179,7 @@ services:
       - mensageria
 
   zookeeper:
-    image: bitnami/zookeeper:3.8.1
+    image: bitnami/zookeeper:3.8.1-debian-11-r18
     container_name: zookeeper
     ports:
       - "2181:2181"
