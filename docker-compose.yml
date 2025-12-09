@@ -11,12 +11,12 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: dev
       JAVA_OPTS: "-Xmx150m -Xms150m"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 60s
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 60s
     networks:
       - mensageria
 
@@ -29,17 +29,18 @@ services:
     restart: always
     mem_limit: 200m
     depends_on:
-      config-server:
-        condition: service_healthy
+      - config-server
+#      config-server:
+#        condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
       JAVA_OPTS: "-Xmx150m -Xms150m"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 300s
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 300s
     networks:
       - mensageria
 
@@ -52,18 +53,19 @@ services:
     restart: always
     mem_limit: 200m
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
+#      eureka-server:
+#        condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
       SPRING_PROFILES_ACTIVE: prod
       JAVA_OPTS: "-Xmx150m -Xms150m"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 300s
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 300s
     networks:
       - mensageria
       - cache
@@ -79,10 +81,12 @@ services:
     restart: always
     mem_limit: 200m
     depends_on:
-      eureka-server:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
+      - eureka-server
+      - postgres
+#      eureka-server:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
       SPRING_PROFILES_ACTIVE: prod
@@ -96,12 +100,12 @@ services:
       RABBIT_PORT: 5672
       RABBIT_USER: ${RABBIT_USER}
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 120s
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 120s
     networks:
       - mensageria
       - cache
@@ -115,10 +119,12 @@ services:
     restart: always
     mem_limit: 200m
     depends_on:
-      eureka-server:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
+      - eureka-server
+      - postgres
+#      eureka-server:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
     environment:
       CONFIG_SERVER_URI: http://config-server:8088
       SPRING_PROFILES_ACTIVE: prod
@@ -132,12 +138,12 @@ services:
       RABBIT_PORT: 5672
       RABBIT_USER: ${RABBIT_USER}
       RABBIT_PASSWORD: ${RABBIT_PASSWORD}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 120s
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+#      interval: 15s
+#      timeout: 10s
+#      retries: 10
+#      start_period: 120s
     networks:
       - mensageria
       - cache
