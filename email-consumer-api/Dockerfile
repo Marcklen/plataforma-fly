@@ -1,13 +1,13 @@
-FROM eclipse-temurin:17-jdk-jammy
-LABEL authors="Marcklen"
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-RUN sed -i 's|http://archive.ubuntu.com|http://mirror.ufscar.br|g' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y netcat curl --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+ -XX:MaxRAMPercentage=70 \
+ -XX:+UseG1GC \
+ -XX:+ExitOnOutOfMemoryError \
+ -Djava.security.egd=file:/dev/./urandom"
 
 COPY target/*.jar app.jar
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
